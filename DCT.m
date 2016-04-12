@@ -1,5 +1,5 @@
 A=imread('lena.bmp');
-imshow(A) %A is unit8(0,255)
+imshow(A) 
 C=dct2(A); %½øĞĞÓàÏÒ±ä»»
 figure;
 B=log(abs(C));
