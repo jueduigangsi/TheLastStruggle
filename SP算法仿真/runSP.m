@@ -1,7 +1,7 @@
 clc;
 clear;
 k=1;
-img = imread('Moonsurface.tiff');
+img = imread('lena.bmp');
 imshow(img)
 img = double(img);
 subplot(2,3,1);
