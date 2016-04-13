@@ -1,58 +1,11 @@
-function CS_BP()
+function X=bp(Y,Compressed_Mat)
 
-% 读入图像
-img=imread('lena.bmp');    
-imshow(img)
-img=double(img);
-[img_height,img_width]=size(img);
+n=length(Y);                          
+s=floor(n/4);                         
 
+X_initial=Compressed_Mat'*Y;                
 
-% 生成高斯随机测量矩阵
-Phi=Get_Gauss_Mat(floor(img_height/1.25),img_width); 
-
-
-% 获得DCT变换矩阵
-mat_dct_1d=dctmtx(256)';
-
-% Y = φ* X, 获得采样数据Y
-Y_Mat=Phi*img;        
-
-% 利用BP算法恢复X
-Sparse_Mat=zeros(img_height,img_width);  
-Theta_1d=Phi*mat_dct_1d;
-    
-for i=1:img_width
-    column_rec=cs_bp(Y_Mat(:,i),Theta_1d,img_height);
-    Sparse_Mat(:,i)=column_rec';           % sparse representation
-end
-img_recovery=mat_dct_1d*Sparse_Mat;          % inverse transform
-
-
-%------------ show the results --------------------
-figure(1)
-subplot(2,2,1),imagesc(img),title('original image')
-subplot(2,2,2),imagesc(Phi),title('measurement mat')
-subplot(2,2,3),imagesc(mat_dct_1d),title('1d dct mat')
-psnr = 20*log10(255/sqrt(mean((img(:)-img_recovery(:)).^2)))
-subplot(2,2,4),imagesc(img_recovery),title(strcat('1d rec img ',num2str(psnr),'dB'))
-
-disp('over')
-
-
-%************************************************************************%
-function hat_x=cs_bp(y,T_Mat,m)
-% y=T_Mat*x, T_Mat is n-by-m
-% y - measurements
-% T_Mat - combination of random matrix and sparse representation basis
-% m - size of the original signal
-% the sparsity is length(y)/4
-
-n=length(y);                           % length of measurements
-s=floor(n/4);                          % sparsity, i.e. number of iterations   
-
-hat_x_initial=T_Mat'*y;                % initialization
-
-hat_x=l1eq_pd(s,hat_x_initial, T_Mat, [], y, 1e-3);
+X=l1eq_pd(s,X_initial, Compressed_Mat, [],Y, 1e-3);
 
 
 
@@ -60,47 +13,11 @@ function xp = l1eq_pd(cnt,x0, A, At, b, pdtol, pdmaxiter, cgtol, cgmaxiter)
 
 % Solve
 % min_x ||x||_1  s.t.  Ax = b
-%
-% Recast as linear program
-% min_{x,u} sum(u)  s.t.  -u <= x <= u,  Ax=b
-% and use primal-dual interior point method
-%
-% Usage: xp = l1eq_pd(x0, A, At, b, pdtol, pdmaxiter, cgtol, cgmaxiter)
-%
-% x0 - Nx1 vector, initial point.
-%
-% A - Either a handle to a function that takes a N vector and returns a K 
-%     vector , or a KxN matrix.  If A is a function handle, the algorithm
-%     operates in "largescale" mode, solving the Newton systems via the
-%     Conjugate Gradients algorithm.
-%
-% At - Handle to a function that takes a K vector and returns an N vector.
-%      If A is a KxN matrix, At is ignored.
-%
-% b - Kx1 vector of observations.
-%
-% pdtol - Tolerance for primal-dual algorithm (algorithm terminates if
-%     the duality gap is less than pdtol).  
-%     Default = 1e-3.
-%
-% pdmaxiter - Maximum number of primal-dual iterations.  
-%     Default = 5.
-%
-% cgtol - Tolerance for Conjugate Gradients; ignored if A is a matrix.
-%     Default = 1e-8.
-%
-% cgmaxiter - Maximum number of iterations for Conjugate Gradients; ignored
-%     if A is a matrix.
-%     Default = 200.
-%
-% Written by: Justin Romberg, Caltech
-% Email: jrom@acm.caltech.edu
-% Created: October 2005
 
 largescale = isa(A,'function_handle');
 
 if (nargin < 6), pdtol = 1;  end
-if (nargin < 7), pdmaxiter = 5;  end   % if it is too large, error comes.
+if (nargin < 7), pdmaxiter = 5;  end  
 if (nargin < 8), cgtol = 1;  end
 if (nargin < 9), cgmaxiter = 200;  end
 
@@ -112,14 +29,13 @@ mu = 10;
 
 gradf0 = [zeros(N,1); ones(N,1)];
 
-% starting point --- make sure that it is feasible
 if (largescale)
   if (norm(A(x0)-b)/norm(b) > cgtol)
-    %disp('Starting point infeasible; using x0 = At*inv(AAt)*y.');
+
     AAt = @(z) A(At(z));
     [w, cgres, cgiter] = cgsolve(AAt, b, cgtol, cgmaxiter, 0);
     if (cgres > 1/2)
-      %disp('A*At is ill-conditioned: cannot find starting point');
+
       xp = x0;
       return;
     end
@@ -127,11 +43,11 @@ if (largescale)
   end
 else
   if (norm(A*x0-b)/norm(b) > cgtol)
-    %disp('Starting point infeasible; using x0 = At*inv(AAt)*y.');
+   
     opts.POSDEF = true; opts.SYM = true;
     [w, hcond] = linsolve(A*A', b, opts);
     if (hcond < 1e-14)
-      %disp('A*At is ill-conditioned: cannot find starting point');
+     
       xp = x0;
       return;
     end
@@ -141,7 +57,6 @@ end
 x = x0;
 u = (0.95)*abs(x0) + (0.10)*max(abs(x0));
 
-% set up for the first iteration
 fu1 = x - u;
 fu2 = -x - u;
 lamu1 = -1./fu1;
@@ -166,9 +81,9 @@ resnorm = norm([rdual; rcent; rpri]);
 pditer = 0;
 done = (sdg < pdtol) | (pditer >= pdmaxiter);
 times=0;
-while ((~done) && (times<cnt))   % the number of iterations is controled by pdmaxiter
-                                 % there is error if the number is too
-                                 % large
+while ((~done) && (times<cnt))  
+                                
+                                
   pditer = pditer + 1;
   times=times+1;
   
@@ -212,13 +127,12 @@ while ((~done) && (times<cnt))   % the number of iterations is controled by pdma
   dlamu1 = (lamu1./fu1).*(-dx+du) - lamu1 - (1/tau)*1./fu1;
   dlamu2 = (lamu2./fu2).*(dx+du) - lamu2 - 1/tau*1./fu2;
   
-  % make sure that the step is feasible: keeps lamu1,lamu2 > 0, fu1,fu2 < 0
+
   indp = find(dlamu1 < 0);  indn = find(dlamu2 < 0);
   s = min([1; -lamu1(indp)./dlamu1(indp); -lamu2(indn)./dlamu2(indn)]);
   indp = find((dx-du) > 0);  indn = find((-dx-du) > 0);
   s = (0.99)*min([s; -fu1(indp)./(dx(indp)-du(indp)); -fu2(indn)./(-dx(indn)-du(indn))]);
-  
-  % backtracking line search
+
   suffdec = 0;
   backiter = 0;
   while (~suffdec)
@@ -238,35 +152,17 @@ while ((~done) && (times<cnt))   % the number of iterations is controled by pdma
       return
     end
   end
-  
-  
-  % next iteration
+
   x = xp;  u = up;
   v = vp;  Atv = Atvp; 
   lamu1 = lamu1p;  lamu2 = lamu2p;
   fu1 = fu1p;  fu2 = fu2p;
-  
-  % surrogate duality gap
+
   sdg = -(fu1'*lamu1 + fu2'*lamu2);
   tau = mu*2*N/sdg;
   rpri = rpp;
   rcent = [-lamu1.*fu1; -lamu2.*fu2] - (1/tau);
   rdual = gradf0 + [lamu1-lamu2; -lamu1-lamu2] + [Atv; zeros(N,1)];
   resnorm = norm([rdual; rcent; rpri]);
-  
   done = (sdg < pdtol) | (pditer >= pdmaxiter);
-  
-%   disp(sprintf('Iteration = %d, tau = %8.3e, Primal = %8.3e, PDGap = %8.3e, Dual res = %8.3e, Primal res = %8.3e',...
-%     pditer, tau, sum(u), sdg, norm(rdual), norm(rpri)));
-%   if (largescale)
-%     disp(sprintf('                  CG Res = %8.3e, CG Iter = %d', cgres, cgiter));
-%   else
-%     disp(sprintf('                  H11p condition number = %8.3e', hcond));
-%   end
-  
 end
-
-
-
-
-
