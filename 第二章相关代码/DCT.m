@@ -1,20 +1,24 @@
 A=imread('lena.bmp');
-imshow(A) 
 C=dct2(A); %进行余弦变换
 figure;
 B=log(abs(C));
-imshow(B)
-colormap(jet(64)); %显示为64级灰度
-colorbar; %显示颜色条，显示变换后的系数分布
-C(abs(C)<20)=0; %将DCT变换后的系数值小于10的元素设为0
+
+subplot(1,2,1);
+imshow(A);
+title('原始图像');
+xlabel('(a)');
+
+C(abs(C)<10)=0; %将DCT变换后的系数值小于10的元素设为0
 %E=idct2(C);
 D=idct2(C)./255; %对DCT变换值归一化，进行余弦反变换???
-figure;
+subplot(1,2,2);
 imshow(D) ;
+title('重构图像');
+xlabel('(b)');
 % imshow(uint8(E)); is the same as D=idct2(C)./255
 % imshow(E,[]); is the same as D=idct2(C)./255
 
 FF=abs(C)<10; %Compute the number of elements which are smaller than 10
-sum(sum(FF)) %result:56632
+sum(sum(FF)) %result:46103
 GG=abs(C)>10; %Compute the number of elements which are larger than 10
-sum(sum(GG)) %result:16025
+sum(sum(GG)) %result:19433
