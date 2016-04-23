@@ -3,7 +3,7 @@ C=dct2(A); %进行余弦变换
 figure;
 B=log(abs(C));
 
-subplot(1,2,1);
+figure;
 imshow(A);
 title('原始图像');
 xlabel('(a)');
@@ -11,7 +11,7 @@ xlabel('(a)');
 C(abs(C)<10)=0; %将DCT变换后的系数值小于10的元素设为0
 %E=idct2(C);
 D=idct2(C)./255; %对DCT变换值归一化，进行余弦反变换???
-subplot(1,2,2);
+figure;
 imshow(D) ;
 title('重构图像');
 xlabel('(b)');
