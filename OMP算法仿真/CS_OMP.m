@@ -6,7 +6,7 @@ img=double(picture);
 [img_height,img_width]=size(img);
 
 % 生成高斯随机测量矩阵
-Phi=Get_Gauss_Mat(floor(img_height/(1/g)),img_width); 
+Phi=Get_Gauss_Mat(floor(g),img_width); 
 
 % 获得DCT变换矩阵
 Dct_Mat=dctmtx(256)';
