@@ -5,7 +5,7 @@ I = imread('lena128.bmp');
 [m,n] = size(I);
 N = m * n;  %稀疏信号长度
 vectorI = reshape(I,N,1);
-x0 = dct(vectorI);
+x0 = dct2(vectorI);
 sampleRate = 0.3;  %采样率 = M/N
 M = round( N * sampleRate );
 %------  高斯感知矩阵Phi   -------------
@@ -19,11 +19,11 @@ y = Phi * x0;
 
 %% -----2. MP Reconstruction ------------
 x = zeros(N,1);       %x0的逼近信号x
-times =  M/2;         %迭代次数 = 稀疏度
+times =  M/2        %迭代次数 = 稀疏度
 g = zeros(N,1);       %余量和感知矩阵内积
 r  = y;               %余量初始化为y
 for count=0:times
-    count
+    count;
     g = Phi' * r;
     [val,K] = max( abs(g) ) ;
     x(K,1) = x(K,1) + g(K,1);
