@@ -1,8 +1,8 @@
 clc
 clear all;
 close all;
-M = 800;   %观测信号长度
-N = 256*256;  %稀疏信号长度
+M = 80;   %观测信号长度
+N = 256;  %稀疏信号长度
 K = 23;   %稀疏度
 %% -----1.生成稀疏度为K的稀疏信号-----
 x0 = zeros(N,1);
@@ -29,6 +29,9 @@ for n=0:times
 end
 disp('relative error=');
 disp( norm(x-x0)/norm(x) );
-figure,  plot(x0,'b'); legend('原始');
-figure,  plot(x,'r');  legend('重构');
-figure,  plot(r);      legend('残差');
+subplot(3,1,1);
+ plot(x0,'b'); xlabel('(a) 原始');
+subplot(3,1,2);
+plot(x,'r');  xlabel('(b) 重构');
+subplot(3,1,3);
+plot(x0-x);      xlabel('(c) 误差');
