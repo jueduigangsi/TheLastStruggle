@@ -1,7 +1,7 @@
 clc;
 clear;
 k=1;
-img = imread('lena.bmp');
+img = imread('jellBeans.bmp');
 imshow(img)
 img = double(img);
 subplot(2,3,1);
