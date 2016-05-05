@@ -43,6 +43,6 @@ SNR = 20 * log10( norm(x0)/norm(rec_x0-x0) )
 stem(x0,'.');
 figure;
 stem(rec_x0,'.');
-legend('原始','重构');
+
 figure
  stem(rec_x0 - x0,'.');
